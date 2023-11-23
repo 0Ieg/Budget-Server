@@ -1,3 +1,4 @@
+import { JwtService } from '@nestjs/jwt';
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,6 +8,7 @@ import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly jwtService:JwtService){}
   async findAll() {
     return (await db.query(`select * from users`)).rows;
   }
@@ -29,14 +31,16 @@ export class UsersService {
       const date = new Date()
       const saltOrRounds = 10;
       const hash = await bcrypt.hash(password, saltOrRounds)
-      const created = (await db.query(`insert into users(user_email, user_password, user_created, user_updated) values ($1,$2,$3,$4)`,[email, hash, date, date])).rowCount===1
-      if (created){
-        return 'Вы успешно зарегистрировались'
+      const user = (await db.query(`insert into users(user_email, user_password, user_created, user_updated) values ($1,$2,$3,$4) returning *`,[email, hash, date, date]))
+      if (user.rowCount===1){
+        const token = this.jwtService.sign({email:email, id:user.rows[0].user_id})
+        return {email, id:user.rows[0].user_id, token}
       }
     }
   }
 
 
+  
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
