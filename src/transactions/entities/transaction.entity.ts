@@ -8,7 +8,7 @@ create table transactions(
 	transaction_category int references categories(category_id),
 	transaction_amount int not null,
 	transaction_user int references users(user_id),
-	transaction_created date not null,
-	transaction_updated date not null	
+	transaction_created timestamptz not null,
+	transaction_updated timestamptz not null	
 )
 `
