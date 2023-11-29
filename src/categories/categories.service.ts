@@ -4,8 +4,8 @@ import { db } from 'src/db';
 @Injectable()
 export class CategoriesService {
   async findOne(category_id: number) {
-    const existsCategory = (await db.query(`select * from categories where category_id=$1`,[category_id])).rows
-    return existsCategory
+    const category = (await db.query(`select * from categories where category_id=$1`,[category_id])).rows
+    return category
   }
 
   async findAll(user_id:number) {
