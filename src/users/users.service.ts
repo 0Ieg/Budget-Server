@@ -2,7 +2,6 @@ import { JwtService } from '@nestjs/jwt';
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { db } from 'src/db';
 import * as bcrypt from 'bcrypt';
 import { UserDto } from './dto/user.dto';
 

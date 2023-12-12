@@ -1,10 +1,11 @@
 import { UserDto } from './../users/dto/user.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UsePipes,ValidationPipe, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UsePipes, ValidationPipe, Req, Query } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { AuthorTransactionGuard } from './guards/author-transaction.guard';
+import { FindAllByTypeDTO } from './dto/findAllByType-transaction.dto';
 
 
 @Controller('transactions')
@@ -15,6 +16,13 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard)
   findAll(@Req() req:{user:UserDto}) {
     return this.transactionsService.findAll(req.user.user_id);
+  }
+
+  @Get('bytype')
+  @UseGuards(JwtAuthGuard) 
+  @UsePipes( new ValidationPipe())
+  findAllByType(@Req() req:{user:UserDto}, @Query() query:FindAllByTypeDTO){
+    return this.transactionsService.findAllByType(req.user.user_id, query.transaction_type)
   }
 
   @Get('pag')

@@ -32,6 +32,11 @@ export class TransactionsService {
     [user_id, limit, offset])).rows
     return {countTransactions, countPages, currentPage}
   }
+  async findAllByType(user_id:number, transaction_type:'expense'|'income'){
+    const allTransactions = (await db.query('select * from transactions where user_id=$1 and transaction_type=$2',[user_id, transaction_type])).rows
+    const amount = +(await db.query('select sum(transaction_amount) as amount from transactions where user_id=$1 and transaction_type=$2',[user_id, transaction_type])).rows[0].amount
+    return {allTransactions, amount}
+  }
 
   async create(createTransactionDto: CreateTransactionDto, user_id:number) {
     const date = new Date()

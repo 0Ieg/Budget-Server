@@ -6,9 +6,17 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { GlobalJwtModule } from './global/jwt.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal:true}), UsersModule, TransactionsModule, CategoriesModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({isGlobal:true}),
+    GlobalJwtModule,
+    UsersModule,
+    TransactionsModule,
+    CategoriesModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService ],
 })
