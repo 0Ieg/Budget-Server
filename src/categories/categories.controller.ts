@@ -12,28 +12,26 @@ export class CategoriesController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(@Req()req:{user:UserDto}) {
-    return this.categoriesService.findAll(req.user.user_id);
-    // return req.user
+  getAll(@Req() req:any) {
+    return this.categoriesService.getAll(req.user.id);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new ValidationPipe())
-  create(@Body() createCategoryDto: CreateCategoryDto, @Req()req:{user:UserDto}) {
-    return this.categoriesService.create(createCategoryDto.category_title, req.user.user_id);
-  }
-
-  @Patch(':category_id')
-  @UseGuards(JwtAuthGuard, AuthorCategoriesGuard)
-  @UsePipes(new ValidationPipe())
-  update(@Param('category_id') category_id: string, @Body() updateCategoryDto: UpdateCategoryDto, @Req() req:{user:UserDto}) {
-    return this.categoriesService.update(+category_id, updateCategoryDto.category_title,req.user.user_id);
+  create(@Req() req:any, @Body() body: CreateCategoryDto) {
+    return this.categoriesService.create(req.user.id, body.title);
   }
 
   @Delete(':category_id')
   @UseGuards(JwtAuthGuard, AuthorCategoriesGuard)
-  remove(@Param('category_id') category_id: string, @Req() req:{user:UserDto}) {
-    return this.categoriesService.remove(+category_id, req.user.user_id);
+  remove(@Req() req:any, @Param('category_id') category_id: string, ) {
+    return this.categoriesService.remove(req.user.id, category_id);
   }
+
+  // @Patch(':category_id')
+  // @UseGuards(JwtAuthGuard, AuthorCategoriesGuard)
+  // @UsePipes(new ValidationPipe())
+  // update(@Param('category_id') category_id: string, @Body() updateCategoryDto: UpdateCategoryDto, @Req() req:{user:UserDto}) {
+  //   return this.categoriesService.update(+category_id, updateCategoryDto.category_title,req.user.user_id);
+  // }
 }

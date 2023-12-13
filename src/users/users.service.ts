@@ -1,50 +1,55 @@
+import { PrismaService } from './../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UserDto } from './dto/user.dto';
+
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly jwtService:JwtService){}
+  constructor(private readonly prismaService:PrismaService, private readonly jwtService:JwtService){}
+  private async hashingPassword(password:string){
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(10))
+  }
+  async findOneById(id:string){
+    return this.prismaService.user.findFirst({where:{id}})
+  }
+  async findOneByEmail(email:string){
+    return this.prismaService.user.findFirst({where:{email}})
+  }
+  async findOneByIdOrEmail(idOrEmail:string){
+    return this.prismaService.user.findFirst({where:{OR:[{email:idOrEmail},{id:idOrEmail}]}})
+  }
   async findAll() {
-    return (await db.query(`select * from users`)).rows;
+    return this.prismaService.user.findMany()
   }
 
-  async findOneForAuthorization(email: string):Promise<UserDto> {
-    const response =  await db.query(`select * from users where user_email=$1`,[email]);
-    if (response.rowCount === 0){
-      throw new UnauthorizedException('Пользователя с таким email адресом не найдено')
+  async create(body: CreateUserDto) {
+    const { email, password } = body
+    const user = await this.findOneByEmail(email)
+    if(user){
+      throw new BadRequestException('Данный Email уже используется')
     }else{
-      return response.rows[0]
-    }   
-  }
-
-  async create(createUserDto: CreateUserDto) {
-    const {email,password} = createUserDto
-    const existUser = (await db.query(`select * from users where user_email=$1`,[email])).rowCount===1
-    if(existUser){
-      throw new BadRequestException('Данный email уже используется')
-    }else{
-      const date = new Date()
-      const saltOrRounds = 10;
-      const hash = await bcrypt.hash(password, saltOrRounds)
-      const user = (await db.query(`insert into users(user_email, user_password, user_created, user_updated) values ($1,$2,$3,$4) returning *`,[email, hash, date, date]))
-      if (user.rowCount===1){
-        const token = this.jwtService.sign({email:email, id:user.rows[0].user_id})
-        return {email, id:user.rows[0].user_id, token}
-      }
+      const hashedPassword = await this.hashingPassword(password)
+      const newUser = await this.prismaService.user.create({data:{email, password:hashedPassword}})
+      const payload = {sub:newUser.id, email:newUser.email}
+      return {id:newUser.id, access_token: this.jwtService.sign(payload)}
     }
   }
 
+  async remove(id:string, password:string) {
+    const user = await this.findOneById(id)
+    const isMatchPassword = await bcrypt.compare(password, user.password)
+    if(isMatchPassword){
+      const deletedUser = await this.prismaService.user.delete({where:{id}})
+      return {message:'Пользователь удален'}
+    }else{
+      throw new BadRequestException('Введен неверный пароль')
+    }
+  }
 
   
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
 }

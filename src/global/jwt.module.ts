@@ -1,6 +1,6 @@
 import { Module, Global } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtModule, JwtService } from "@nestjs/jwt";
+import { JwtModule } from "@nestjs/jwt";
 
 @Global()
 @Module({
@@ -12,6 +12,6 @@ import { JwtModule, JwtService } from "@nestjs/jwt";
       signOptions:{expiresIn:configService.get('JWT_EXPIRESIN')}
     })
   })],
-  exports:[JwtService]
+  exports:[JwtModule]
 })
 export class GlobalJwtModule {}
