@@ -1,33 +1,37 @@
 import { PrismaService } from './../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @Injectable()
 export class TransactionsService {
   constructor(private readonly prismaService:PrismaService){}
   async findAll(userId:string) {
-    return this.prismaService.transaction.findMany({where:{userId}})
+    return this.prismaService.transaction.findMany({where:{userId}, include:{category:true}})
+  }
+
+  async findAllWithPagination(take:number, page:number, userId:string){
+    const skip = (page-1)*take
+    return this.prismaService.transaction.findMany({take, skip, where:{userId}, orderBy:{created:'asc'}})
+  }
+
+  async findAllByType(type:'expense'|'income', userId:string){
+    return this.prismaService.transaction.findMany({where:{type, userId}})
+  }
+
+  async create(body:CreateTransactionDto ,userId:string){
+    return this.prismaService.transaction.create({data:{...body, userId}, include:{category:true}})
+  }
+
+  async remove( id:string, userId:string){
+    return this.prismaService.transaction.delete({where:{id, userId}})
+  }
+
+  async findOneByIdOrUserId(id:string, userId:string) {
+    return this.prismaService.transaction.findFirst({where:{id, userId}});
   }
 
 
-  // async findOne(transaction_id: number) {
-  //   const transaction = (await db.query('select * from transactions where transaction_id=$1',[transaction_id])).rows
-  //   return transaction;
-  // }
-
-
-  // async findAllWithPagination(user_id:number, limit:number, page:number){
-  //   const offset = (page-1)*limit
-  //   const countTransactions = +(await db.query('select count(transaction_id) from transactions where user_id=$1',[user_id])).rows[0].count
-  //   const countPages = Math.ceil(countTransactions/limit)
-  //   const currentPage = (await db.query('select * from transactions join(select transaction_id from transactions where user_id=$1 order by transaction_id limit $2 offset $3) using(transaction_id)',
-  //   [user_id, limit, offset])).rows
-  //   return {countTransactions, countPages, currentPage}
-  // }
-  // async findAllByType(user_id:number, transaction_type:'expense'|'income'){
-  //   const allTransactions = (await db.query('select * from transactions where user_id=$1 and transaction_type=$2',[user_id, transaction_type])).rows
-  //   const amount = +(await db.query('select sum(transaction_amount) as amount from transactions where user_id=$1 and transaction_type=$2',[user_id, transaction_type])).rows[0].amount
-  //   return {allTransactions, amount}
-  // }
 
   // async create(createTransactionDto: CreateTransactionDto, user_id:number) {
   //   const date = new Date()

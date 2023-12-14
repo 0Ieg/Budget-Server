@@ -12,37 +12,37 @@ import { FindAllByTypeDTO } from './dto/findAllByType-transaction.dto';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @Get()
+  @Get('all')
   @UseGuards(JwtAuthGuard)
   findAll(@Req() req:any) {
     return this.transactionsService.findAll(req.user.id);
   }
 
-  // @Get('bytype')
-  // @UseGuards(JwtAuthGuard) 
-  // @UsePipes( new ValidationPipe())
-  // findAllByType(@Req() req:{user:UserDto}, @Query() query:FindAllByTypeDTO){
-  //   return this.transactionsService.findAllByType(req.user.user_id, query.transaction_type)
-  // }
+  @Get('bytype')
+  @UseGuards(JwtAuthGuard) 
+  findAllByType(@Req() req:any, @Query() query:FindAllByTypeDTO){
+    return this.transactionsService.findAllByType(query.type, req.user.id, )
+  }
 
-  // @Get('pag')
-  // @UseGuards(JwtAuthGuard)
-  // findAllWithPagination(@Req() req:{user:UserDto},@Query('limit') limit:number, @Query('page') page:number) {
-  //   return this.transactionsService.findAllWithPagination(+ req.user.user_id, limit, page);
-  // }
+  @Get('pag')
+  @UseGuards(JwtAuthGuard)
+  findAllWithPagination(@Req() req:any, @Query('take') take:string, @Query('page') page:string) {
+    return this.transactionsService.findAllWithPagination(+take, +page, req.user.id);
+  }
 
-  // @Post()
-  // @UseGuards(JwtAuthGuard)
-  // @UsePipes( new ValidationPipe())
-  // create(@Body() createTransactionDto: CreateTransactionDto, @Req() req:{user:UserDto}) {
-  //   return this.transactionsService.create(createTransactionDto, req.user.user_id);
-  // }
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  create(@Body() body: CreateTransactionDto, @Req() req:any) {
+    return this.transactionsService.create(body, req.user.id);
+  }
 
-  // @Delete(':transaction_id')
-  // @UseGuards(JwtAuthGuard, AuthorTransactionGuard)
-  // remove(@Param('transaction_id') id: string, @Req() req:{user:UserDto}) {
-  //   return this.transactionsService.remove(+id, req.user.user_id);
-  // }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, AuthorTransactionGuard)
+  remove(@Param('id') id:string, @Req() req:any) {
+    return this.transactionsService.remove(id, req.user.id);
+  }
+
+
 
   // @Patch(':transaction_id')
   // @UseGuards(JwtAuthGuard, AuthorTransactionGuard)

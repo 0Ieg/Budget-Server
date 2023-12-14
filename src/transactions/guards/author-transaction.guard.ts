@@ -6,15 +6,14 @@ export class AuthorTransactionGuard implements CanActivate{
   constructor(private readonly transactionsService:TransactionsService) {}
   
   async canActivate(context:ExecutionContext):Promise<any>{
-    // const request = context.switchToHttp().getRequest()
-    // const {user_id} = request.user
-    // const {transaction_id} = request.params
-    // const isAuthor = (await this.transactionsService.findOne(transaction_id))[0].user_id === user_id
-    // if(isAuthor){
-    //   return true
-    // }else{
-    //   throw new NotFoundException('Нельзя взаимодействовать с чужой транзакцией')
-    // }
-    
+    const request = context.switchToHttp().getRequest()
+    const userId = await request.user.id
+    const {id} = request.params
+    const transaction = await this.transactionsService.findOneByIdOrUserId(id, userId)
+    if(transaction){
+      return true
+    }else{
+      throw new NotFoundException('Transaction not found')
+    }
   }
 }

@@ -4,5 +4,5 @@ enum TransactionsTypes{expense='expense', income='income'}
 export class FindAllByTypeDTO {
   @IsNotEmpty()
   @IsEnum(TransactionsTypes)
-  transaction_type:'expense'|'income'
+  type:'expense'|'income'
 }
