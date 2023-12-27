@@ -26,4 +26,8 @@ export class AuthService {
     const payload = {sub:id, email};
     return {id, access_token: this.jwtService.sign(payload)}
   }
+
+  async profile(id:string) {
+    return await this.usersService.findOneById(id)
+  }
 }

@@ -8,7 +8,7 @@ export class AuthorCategoriesGuard implements CanActivate{
     const request = context.switchToHttp().getRequest()
     const {id} = request.user
     const {category_id} = request.params
-    const category = await this.categoriesService.findOne(category_id)
+    const category = await this.categoriesService.findOne(category_id, id)
     if (category?.userId===id){
       return true
     }else{

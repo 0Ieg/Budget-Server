@@ -27,6 +27,7 @@ export class TransactionsController {
   @Get('pag')
   @UseGuards(JwtAuthGuard)
   findAllWithPagination(@Req() req:any, @Query('take') take:string, @Query('page') page:string) {
+    console.log(take, page)
     return this.transactionsService.findAllWithPagination(+take, +page, req.user.id);
   }
 

@@ -3,7 +3,6 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserDto } from 'src/users/dto/user.dto';
 import { AuthorCategoriesGuard } from './guards/author-categories.guard';
 
 @Controller('categories')
@@ -28,10 +27,9 @@ export class CategoriesController {
     return this.categoriesService.remove(req.user.id, category_id);
   }
 
-  // @Patch(':category_id')
-  // @UseGuards(JwtAuthGuard, AuthorCategoriesGuard)
-  // @UsePipes(new ValidationPipe())
-  // update(@Param('category_id') category_id: string, @Body() updateCategoryDto: UpdateCategoryDto, @Req() req:{user:UserDto}) {
-  //   return this.categoriesService.update(+category_id, updateCategoryDto.category_title,req.user.user_id);
-  // }
+  @Patch(':category_id')
+  @UseGuards(JwtAuthGuard, AuthorCategoriesGuard)
+  update(@Param('category_id') category_id: string, @Body() body: UpdateCategoryDto, @Req() req:any) {
+    return this.categoriesService.update(category_id, body.title, req.user.id);
+  }
 }

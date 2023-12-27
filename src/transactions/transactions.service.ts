@@ -3,16 +3,41 @@ import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
+
+
+
 @Injectable()
 export class TransactionsService {
   constructor(private readonly prismaService:PrismaService){}
   async findAll(userId:string) {
-    return this.prismaService.transaction.findMany({where:{userId}, include:{category:true}})
+    const data = await this.prismaService.$transaction([
+      this.prismaService.transaction.findMany({where:{userId}, include:{category:true}, orderBy:{created:'desc'}}),
+      this.prismaService.transaction.count({where:{userId}})
+    ])
+    const total = await this.prismaService.transaction.groupBy({
+      by:'type',
+      where:{userId},
+      _sum:{amount:true}
+    })
+    const totalIncome = total.find(item=>item.type==='income' && item._sum.amount)?._sum.amount || 0
+    const totaExpense = total.find(item=>item.type==='expense' && item._sum.amount)?._sum.amount || 0
+    return {transactions:data[0], count:data[1], total:{income:totalIncome, expense:totaExpense}}
   }
 
   async findAllWithPagination(take:number, page:number, userId:string){
     const skip = (page-1)*take
-    return this.prismaService.transaction.findMany({take, skip, where:{userId}, orderBy:{created:'asc'}})
+    const data = await this.prismaService.$transaction([
+      this.prismaService.transaction.findMany({take, skip, where:{userId}, include:{category:true}, orderBy:{created:'asc'}}),
+      this.prismaService.transaction.count({where:{userId}}),
+    ])
+    const total = await this.prismaService.transaction.groupBy({
+      by: "type",
+      where:{userId},
+      _sum:{amount:true},
+    })
+    const totalIncome = total.find(item=>item.type==='income' && item._sum.amount)?._sum.amount || 0
+    const totaExpense = total.find(item=>item.type==='expense' && item._sum.amount)?._sum.amount || 0
+    return {transactions:data[0], count:data[1], total:{income:totalIncome, expense:totaExpense}}
   }
 
   async findAllByType(type:'expense'|'income', userId:string){
